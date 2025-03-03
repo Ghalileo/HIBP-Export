@@ -29,8 +29,34 @@ def email_breach_check(email):
         return response.json()
     elif response.status_code == 400:
         return[]
-    else
+    else:
         print(F"Error for {email}: {response.status_code}, {response.text}")
         return None
 
+def save_response_results(results):
+    data = []
 
+    for email, breaches in results.items():
+        if breaches:
+            for breach in breaches:
+                data.append({
+                    "Email": email,
+                    "Breach Name": breach.get("Name", "N/A"),
+                    "Breach Date": breach.get("BreachDate", "Unknown Date"),
+                    "Exposed Data": ", ".join(breach.get("DataClasses", ["Unknown"])),
+                    "Details": breach.get("Description", "N/A")
+                })
+
+        else:
+            data.append({
+                "Email": email,
+                "Breach Name": "No Breach Data",
+                "Breach Date": "N/A",
+                "Exposed Data": "N/A",
+                "Details": "N/A"
+            })
+
+    df = pd.DataFrame(data)
+
+    df.to_csv(CSV_FILENAME, index=False, encoding="utf-8")
+    print(f"Results saved to {CSV_FILENAME}")
